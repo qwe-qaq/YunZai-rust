@@ -46,7 +46,7 @@ cargo build --release
 # 产物：target/release/yz-gateway  target/release/yz-render
 ```
 
-要求：Rust 1.75+；`yz-render` 需要本机有 Chrome/Chromium。
+要求：Rust **stable**（CI 与本地均在 1.93.0 验证过；更早版本未测，不写死 MSRV）；`yz-render` 需要本机有 Chrome/Chromium（`--headless=new` 要求 Chrome ≥ 112）。
 
 ### 2.2 启动顺序
 
@@ -56,11 +56,14 @@ cargo build --release
 node app.js
 
 # 3) 渲染服务（可选，但推荐）
-./yz-render config/render.toml
+./target/release/yz-render config/render.toml
 
 # 4) 网关
-./yz-gateway config/gateway.toml
+./target/release/yz-gateway config/gateway.toml
 ```
+
+嫌路径长就先 `cp target/release/yz-* .`，之后直接 `./yz-gateway config/gateway.toml`。
+或者用 `./deploy/start.sh`（自动找 `target/release`，两个进程一起起，Ctrl-C 一起退）。
 
 启动后：
 
@@ -256,6 +259,16 @@ Environment=RUST_LOG=info
 WantedBy=multi-user.target
 ```
 
+部署时先把产物和配置放到 `WorkingDirectory`：
+
+```bash
+sudo mkdir -p /opt/yunzai-rust/config
+sudo cp target/release/yz-gateway target/release/yz-render /opt/yunzai-rust/
+sudo cp config/*.toml /opt/yunzai-rust/config/
+sudo cp deploy/yz-gateway.service deploy/yz-render.service /etc/systemd/system/
+sudo systemctl enable --now yz-gateway yz-render
+```
+
 `yz-render` 同理，建议 `Restart=always`：Chrome 崩溃时由 systemd 拉起（网关会自动重连）。
 
 ### 观测
@@ -321,7 +334,7 @@ cargo test
 ```
 
 代码量：Rust 约 2000 行（含测试），Node 侧新增约 120 行（渲染后端）。
-release 产物：`yz-gateway` 2.5 MB、`yz-render` 2.4 MB，网关空载 RSS 约 4.7 MB。
+release 产物：`yz-gateway` 2.4 MB、`yz-render` 2.3 MB（strip + LTO），网关空载 RSS 约 4.5 MB。
 
 ## 许可证
 
