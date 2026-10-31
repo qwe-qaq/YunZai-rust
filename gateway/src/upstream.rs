@@ -255,6 +255,10 @@ async fn handle_reverse_conn(
     global: Arc<Global>,
 ) -> Result<()> {
     let token = cfg.server.reverse_token.clone();
+    // 握手回调的返回类型由 tungstenite 的 accept_hdr_async 签名决定，
+    // ErrorResponse（http::Response<Option<String>>）超过 clippy 的 128 字节阈值，
+    // 这里无法改成 Box，只能定点豁免。
+    #[allow(clippy::result_large_err)]
     let ws = tokio_tungstenite::accept_hdr_async(
         stream,
         move |req: &Request, resp: Response| -> Result<Response, ErrorResponse> {
