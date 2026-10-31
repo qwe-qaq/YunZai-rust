@@ -1,0 +1,18 @@
+[package]
+name = "yz-gateway"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "OneBot v11 网关：为 Yunzai 提供连接管理、多账号路由与限流"
+
+[dependencies]
+tokio.workspace = true
+tokio-tungstenite.workspace = true
+futures-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+axum.workspace = true

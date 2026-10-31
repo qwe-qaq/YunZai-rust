@@ -1,0 +1,17 @@
+[Unit]
+Description=Yunzai OneBot Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/yunzai-rust
+ExecStart=/opt/yunzai-rust/yz-gateway /opt/yunzai-rust/config/gateway.toml
+Restart=always
+RestartSec=2
+Environment=RUST_LOG=info
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

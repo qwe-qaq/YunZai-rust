@@ -1,0 +1,32 @@
+# 多账号示例：两个协议端 / 两个 QQ 号
+# 网关会为每个 self_id 单独建立一条到 Yunzai 的连接，
+# Yunzai 侧看到的就是两个独立的「协议端」，多账号语义完全保留。
+
+[server]
+status_listen = "127.0.0.1:6701"
+reverse_listen = "0.0.0.0:6700"
+reverse_token = ""
+
+[downstream]
+url = "ws://127.0.0.1:2536/OneBotv11"
+token = ""
+connect_timeout_ms = 8000
+
+[limits]
+queue = 2048
+action_rate_per_sec = 0.0
+event_rate_per_sec = 0.0
+keepalive_secs = 25
+prime_timeout_ms = 2000
+
+[[upstream]]
+name = "bot-a"
+mode = "forward"
+self_id = 10001
+url = "ws://127.0.0.1:3001"
+
+[[upstream]]
+name = "bot-b"
+mode = "forward"
+self_id = 10002
+url = "ws://127.0.0.1:3002"

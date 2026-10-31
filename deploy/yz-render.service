@@ -1,0 +1,17 @@
+[Unit]
+Description=Yunzai HTML Render Service (Chrome/CDP)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/yunzai-rust
+ExecStart=/opt/yunzai-rust/yz-render /opt/yunzai-rust/config/render.toml
+Restart=always
+RestartSec=2
+Environment=RUST_LOG=info
+# Chrome 需要能写自己的 profile 与 /dev/shm
+PrivateTmp=false
+
+[Install]
+WantedBy=multi-user.target

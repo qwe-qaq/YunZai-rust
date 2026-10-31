@@ -1,0 +1,24 @@
+# yz-render 后端配置
+# 复制到 Yunzai 的 renderers/yz-render/config.yaml
+
+# Rust 渲染服务地址
+endpoint: http://127.0.0.1:6702
+
+# 视口（CSS 像素）
+width: 800
+height: 600
+# 像素比：2 = 二倍图，Yunzai 模板按 800px 宽设计时用它保证清晰度
+scale: 2
+
+# 输出格式：png / jpeg / webp
+imgType: jpeg
+quality: 90
+
+# 是否截整页（Yunzai 的面板图普遍是长图，保持 true）
+fullPage: true
+
+# 等待该元素出现后再截图
+selector: "#container"
+
+# 单张超时（毫秒）
+timeout: 20000

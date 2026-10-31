@@ -1,0 +1,58 @@
+# yz-gateway 配置
+#
+# 数据流向：
+#   协议端(NapCat/Lagrange)  <--ws-->  [本网关]  <--ws-->  Yunzai(/OneBotv11)
+#
+# Yunzai 侧无需改插件，只要保证 server 端口可被本网关访问。
+
+[server]
+# 状态与指标：/healthz /status /metrics
+status_listen = "127.0.0.1:6701"
+# 协议端「反向 WS」的接入地址（仅 mode = "reverse" 时生效）
+reverse_listen = "0.0.0.0:6700"
+# 反向接入鉴权，例如 "Bearer change-me"；留空则不校验
+reverse_token = ""
+
+[downstream]
+# Yunzai 的 OneBotv11 路径 = ws://<host>:<server.port>/OneBotv11
+url = "ws://127.0.0.1:2536/OneBotv11"
+# 对应 Yunzai config/config/server.yaml 的 auth，例如 { Authorization: "Bearer xxx" }
+token = ""
+connect_timeout_ms = 8000
+
+[limits]
+# 单向队列长度，满了会反压上游而不是丢消息
+queue = 2048
+# Yunzai -> 协议端 的 action 速率上限（条/秒），0 不限
+action_rate_per_sec = 30.0
+# 协议端 -> Yunzai 的事件速率上限（条/秒），0 不限
+event_rate_per_sec = 200.0
+# 心跳间隔（秒），0 关闭
+keepalive_secs = 25
+# 建连后等待协议端首帧的时长，超时则合成 lifecycle 事件
+prime_timeout_ms = 2000
+
+# ---------------------------------------------------------------
+# 一个 [[upstream]] 对应一个机器人账号（self_id），
+# 网关会为该账号单独建立一条到 Yunzai 的连接，
+# 从而完整保留 Yunzai 的多账号语义。
+# ---------------------------------------------------------------
+
+[[upstream]]
+name = "napcat-main"
+# forward: 网关连协议端；reverse: 协议端连网关
+mode = "forward"
+self_id = 10001
+url = "ws://127.0.0.1:3001"
+token = ""
+reconnect_min_ms = 500
+reconnect_max_ms = 30000
+enabled = true
+
+# 第二个账号示例
+# [[upstream]]
+# name = "lagrange-backup"
+# mode = "forward"
+# self_id = 10002
+# url = "ws://127.0.0.1:3002"
+# token = ""

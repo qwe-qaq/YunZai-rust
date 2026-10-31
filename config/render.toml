@@ -1,0 +1,15 @@
+# yz-render 配置
+
+[server]
+# HTTP 监听地址；Node 侧 renderer 指向这里
+listen = "127.0.0.1:6702"
+# 同时渲染的 page 数（Chrome 里每个 page 约 30–80MB）
+concurrency = 6
+
+[chrome]
+# 可执行文件路径，也可以是 chromium / google-chrome / chrome
+binary = "chromium"
+# 必须可写；启动时会清空
+user_data_dir = "/tmp/yz-render-profile"
+# 额外启动参数，例如 ["--proxy-server=http://127.0.0.1:7890"]
+extra_args = []
