@@ -1,3 +1,6 @@
+[![CI](https://github.com/qwe-qaq/YunZai-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/qwe-qaq/YunZai-rust/actions/workflows/ci.yml)
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+
 # Yunzai × Rust：接入网关 + 渲染服务
 
 这是把 TRSS-Yunzai「按路线 A 重写」的落地实现：**只替换基础设施层，插件层保持原样**。
@@ -207,6 +210,31 @@ python3 scripts/e2e_render_chain.py ./target/release/yz-gateway ./target/release
 
 ---
 
+### CI 覆盖范围
+
+GitHub Actions（`.github/workflows/ci.yml`）分三个 job，每次 push / PR 自动跑：
+
+| job | 内容 | 说明 |
+|---|---|---|
+| 格式与静态检查 | `cargo fmt --check`、`cargo clippy -D warnings` | 零告警门禁 |
+| 单元测试 | `cargo test --workspace --all-targets` | 8 个用例 |
+| 端到端与渲染 | release 构建 → 网关单/多账号 e2e → 装 Chrome → 渲染冒烟 | 23 项断言，产物上传 artifact |
+
+本地复现整条流水线：
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace --all-targets
+cargo build --release --workspace
+python3 scripts/e2e.py target/release/yz-gateway        # 10 项
+python3 scripts/e2e_multi.py target/release/yz-gateway  # 6 项
+python3 scripts/smoke_render.py target/release/yz-render chromium  # 7 项
+```
+
+CI 不覆盖的两项（依赖外部环境，需手工跑）：`e2e_real_yunzai.py`（真实 Yunzai + Node + Redis）、
+`e2e_render_chain.py`（真实 Yunzai 出图全链路）。
+
 ## 五、运维
 
 ### systemd
@@ -280,6 +308,7 @@ yunzai-rust/
 ├── node-patch/
 │   ├── renderers/yz-render/   Yunzai 渲染后端（新增，不修改原文件）
 │   └── examples/yz-test-render/  验证链路用的示例插件（非生产）
+├── .github/workflows/ci.yml   CI 流水线
 ├── deploy/                    systemd 单元 + 本地启动脚本
 └── scripts/                   e2e 测试
 ```

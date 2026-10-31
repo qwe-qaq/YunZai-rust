@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一分支的旧任务自动取消，避免连续 push 堆积
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  lint:
+    name: 格式与静态检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  test:
+    name: 单元测试
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo test
+        run: cargo test --workspace --all-targets
+
+  integration:
+    name: 端到端与渲染
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: 构建 release
+        run: cargo build --release --workspace
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装测试依赖
+        run: pip install websockets
+
+      - name: 网关单账号 e2e
+        run: python3 scripts/e2e.py target/release/yz-gateway
+
+      - name: 网关多账号 e2e
+        run: python3 scripts/e2e_multi.py target/release/yz-gateway
+
+      # 渲染需要真实的 Chrome；headless=new 要求 >= 112
+      - name: 安装 Chrome 与中文字体
+        run: |
+          wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get install -y /tmp/chrome.deb fonts-noto-cjk
+          google-chrome --version
+
+      - name: 渲染服务冒烟
+        run: python3 scripts/smoke_render.py target/release/yz-render google-chrome
+
+      - name: 上传二进制
+        uses: actions/upload-artifact@v4
+        with:
+          name: yz-binaries-${{ github.sha }}
+          path: |
+            target/release/yz-gateway
+            target/release/yz-render
+          retention-days: 7
+          if-no-files-found: error

@@ -205,7 +205,7 @@ where
         set.spawn(async move {
             loop {
                 ticker.tick().await;
-                if ka_tx.send(Message::Ping(Vec::new().into())).await.is_err() {
+                if ka_tx.send(Message::Ping(Vec::new())).await.is_err() {
                     break;
                 }
             }

@@ -136,11 +136,11 @@ async fn run_forward(
 
     if !is_lifecycle {
         let synthetic = synthetic_lifecycle(cfg.self_id);
-        down.send(Message::Text(synthetic.into())).await?;
+        down.send(Message::Text(synthetic)).await?;
         tracing::info!(upstream = %cfg.name, "未收到协议端 lifecycle，已合成一条");
     }
     if let Some(first) = primed {
-        down.send(Message::Text(first.into())).await?;
+        down.send(Message::Text(first)).await?;
     }
 
     global.mark_connected(&cfg.name);
@@ -189,11 +189,11 @@ async fn run_reverse(
         .unwrap_or(false);
 
     if !is_lifecycle {
-        down.send(Message::Text(synthetic_lifecycle(cfg.self_id).into()))
+        down.send(Message::Text(synthetic_lifecycle(cfg.self_id)))
             .await?;
     }
     if let Some(first) = first {
-        down.send(Message::Text(first.into())).await?;
+        down.send(Message::Text(first)).await?;
     }
 
     global.mark_connected(&cfg.name);
@@ -326,7 +326,7 @@ mod tests {
         let d1 = b.next_delay().as_millis();
         let d2 = b.next_delay().as_millis();
         let d3 = b.next_delay().as_millis();
-        assert!(d1 >= 500 && d1 < 700);
+        assert!((500..700).contains(&d1));
         assert!(d2 > d1);
         assert!(d3 > d2);
         for _ in 0..20 {

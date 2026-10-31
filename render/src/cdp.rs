@@ -103,7 +103,7 @@ impl Cdp {
         let (tx, rx) = oneshot::channel();
         self.pending.lock().await.insert(id, tx);
 
-        if self.tx.send(Message::Text(req.to_string().into())).is_err() {
+        if self.tx.send(Message::Text(req.to_string())).is_err() {
             self.pending.lock().await.remove(&id);
             bail!("CDP 通道已关闭");
         }

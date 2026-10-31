@@ -82,19 +82,14 @@ pub struct UpstreamCfg {
     pub enabled: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
     /// 网关作为客户端连接协议端（NapCat/Lagrange 的「正向 WS」）
+    #[default]
     Forward,
     /// 网关作为服务端接受协议端连接（「反向 WS」）
     Reverse,
-}
-
-impl Default for Mode {
-    fn default() -> Self {
-        Mode::Forward
-    }
 }
 
 impl Mode {
